@@ -4,32 +4,28 @@ from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 
 class ChileanUserManager (BaseUserManager):
     
-    def create_user(self, email, username, studying, password = None):
+    def create_user(self, email, username, password = None):
         
         if not email:
             raise ValueError("User must have an email address")
         if not username:
             raise ValueError("User must specify an username")
-        if not studying:
-            raise ValueError("User must declare if studying")
 
         user = self.model(
             email = self.normalize_email(email),
             username = username,
-            studying = studying,
         )
         user.set_password(password)
         user.save(using=self._db)
         return user
     
     
-    def create_superuser (self, email, username, studying, password = None):
+    def create_superuser (self, email, username, password = None):
         
         user = self.create_user(
             email,
             password=password,
             username=username,
-            studying=studying
         )
 
         user.is_superuser = True

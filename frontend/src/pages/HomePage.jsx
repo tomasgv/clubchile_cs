@@ -1,4 +1,4 @@
-import ImageSlider from "./ImageSlider.tsx";
+import ImageSlider from "../components/ImageSlider.tsx";
 import Img1 from '../imgs/Imagen de WhatsApp 2023-09-12 a las 17.38.49_6f2f5aa9.jpg';
 import Img2 from '../imgs/Imagen de WhatsApp 2023-09-12 a las 22.11.54_8498568e.jpg';
 import Img3 from '../imgs/Imagen de WhatsApp 2023-09-16 a las 22.35.29_b02b9d5e.jpg';

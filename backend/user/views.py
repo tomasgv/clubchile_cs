@@ -11,13 +11,15 @@ from .validations import *
 
 # Create your views here.
 
+
+
+
 class UserRegister (APIView):
     
     authentication_classes = []
     permission_classes = [permissions.AllowAny]
     
     def post (self, request, format = None):
-        
         valid_data = validation_registration(request.data)
         serializer = ChileanUserRegisterSerializer(data = valid_data)
         
@@ -31,15 +33,15 @@ class UserRegister (APIView):
 class UserLogin (APIView):
     
     # En
-    authentication_classes = [authentication.SessionAuthentication, ]
+    authentication_classes = [ ]
     permission_classes = [permissions.AllowAny, ]
     
     def post (self, request, format = None):
         
         validated_data = validation_login(request.data)    
-        serializer = ChileanUserLoginSerializer(validated_data)
+        serializer = ChileanUserLoginSerializer(data = validated_data)
         
-        if serializer.is_valid (raise_exception=True):
+        if serializer.is_valid(raise_exception=True):
             user = serializer.check_user(validated_data)
             login(request, user)
             return Response(serializer.data, status= status.HTTP_200_OK)
@@ -49,6 +51,10 @@ class UserLogin (APIView):
     
 
 class UserLogout (APIView):
+    
+    authentication_classes = [ ]
+    permission_classes = [permissions.AllowAny, ]
+    
     def post (self, request, format = None):
         logout(request)
         return Response(status=status.HTTP_200_OK)
@@ -59,7 +65,18 @@ class UserView (APIView):
     authentication_classes = [authentication.SessionAuthentication, ]
     permission_classes = [permissions.IsAuthenticated]
     
-    def get (self, request, format = None):
+    def get (self, request, format = None):     
+        serializer = ChileanUserSerializer(request.user)
         
-        pass
+        return Response ( {'user' : serializer.data }, status = status.HTTP_200_OK )
+    
+    
+class TestView (APIView):
+    authentication_classes = [authentication.SessionAuthentication, ]
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post (self, request, format = None):     
+        print("Post ha pasado la prueba con el usuario")
+        
+        return Response ( status = status.HTTP_200_OK )
         

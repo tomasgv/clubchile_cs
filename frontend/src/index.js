@@ -3,10 +3,14 @@ import ReactDOM from 'react-dom/client';
 import {createBrowserRouter, RouterProvider} from "react-router-dom";
 import './index.css';
 import Root from './root';
-import HomePage from './components/HomePage';
-import NosotrosPage from './components/NosotrosPage.tsx';
-import Inventario from './components/Inventario.tsx';
+import HomePage from './pages/HomePage';
+import NosotrosPage from './pages/NosotrosPage.tsx';
+import Inventario from './pages/InventarioPage.tsx';
+import Login, {action as loginAction} from './pages/LoginPage.jsx';
+import Register from './pages/RegisterPage.jsx';
+import Account from './pages/AccountPage.jsx';
 import reportWebVitals from './reportWebVitals';
+
 
 const router = createBrowserRouter([
   {
@@ -24,6 +28,19 @@ const router = createBrowserRouter([
       {
         path : "/Inventario",
         element : <Inventario />
+      },
+      {
+        path : "/Login",
+        element : <Login />,
+        action : loginAction,
+      },
+      {
+        path : "/Register",
+        element : <Register />
+      },
+      {
+        path : "/Account",
+        element : <Account />
       }
     ]
   }

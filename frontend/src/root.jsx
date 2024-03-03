@@ -1,12 +1,29 @@
 import maoiImg from './svg/moai-chile-svgrepo-com.svg';
 import chileFlag from './svg/flag-for-flag-chile-svgrepo-com.svg';
 import instaImg from './svg/instagram-svgrepo-com.svg';
-import { Outlet, Link } from 'react-router-dom';
-import React, {useEffect, useState} from 'react';
+import { Outlet, Link, useNavigate } from 'react-router-dom';
+import React, {useEffect, useState, useContext, createContext} from 'react';
+import axios from 'axios';
 
+
+axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
+axios.defaults.xsrfCookieName = "csrftoken";
+axios.defaults.withCredentials = true;
+
+const client = axios.create({
+    baseURL: "http://127.0.0.1:8000/",
+});
+
+
+export const AuthContext = createContext(null);
 
 export default function Root () {
 
+
+    const [isLogged, setIsLogged] = useState(false);
+    const loginInReact = () => setIsLogged(true);
+    const logoutInReact = () => setIsLogged(false);
+    const navigate = useNavigate()
 
 
     /* we want to control the top navbar */
@@ -23,17 +40,44 @@ export default function Root () {
         setPrevScrollPos(currentScrollPos);    
     }
 
+    const handleLogout = (e) => {
+        e.preventDefault();
+        client.post(
+            "api-user/logout/",
+            {withCredentials : true}
+        ).then ((response) => {
+            setIsLogged(false);
+        }).then(() => {
+            navigate("/");
+        })
+    }
+
+
+    /* console.log(isLogged); */
+
+
+    
+    /* For controlling the navbar disappearance */
     useEffect( () => {
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, [prevScrollPos] )
 
+    useEffect ( () => {
+        axios.get("api-user/user")
+            .then( (response) => {
+                setIsLogged(true);
+            }).catch ( (error) => {
+                setIsLogged(false);
+            })
+    }, []);
+
 
     return (
     <>
+    <AuthContext.Provider value={{isLogged, loginInReact, logoutInReact}}>
 
     {/* --------- Init navbar ----------- */}
-
     <div className={`navbar bg-base-100 z-50 fixed top-0 transition-transform ease-in-out duration-500 ${visibleNavBar ? '' : '-translate-y-20'} `}>
         <div className="navbar-start">
             <div className="dropdown">
@@ -58,7 +102,7 @@ export default function Root () {
             </div>
             <Link to={"/"} className="btn btn-ghost text-xl">
                 <img src={chileFlag} className='' width="30px" alt="Chilean flag"/>
-                Chilean club
+                Club Chileno
             </Link>
         </div>
         <div className="navbar-center hidden lg:flex">
@@ -78,18 +122,37 @@ export default function Root () {
             </ul>
         </div>
         <div className="navbar-end">
+            {/* Icono de instagram */}
             <a className="btn btn-ghost"><img src={instaImg} width="30px" alt="Chilean flag"/></a>
-            <a className="btn btn-ghost">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.7} stroke="currentColor" className="size-9">
-                    <path strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                </svg>
-            </a>
 
+            {/* Icono de perfil */}
+            { isLogged ? 
+                <div className="dropdown dropdown-end">
+                    <div tabIndex={0} role="button" className="btn btn-ghost m-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.7} stroke="currentColor" className="size-9">
+                            <path strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        </svg>
+                    </div>
+                    <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+                        <li><Link to={"/Account"}>Account</Link></li>
+                        <li><a onClick={(e) => handleLogout(e)}>Logout</a></li>
+                    </ul>
+                </div>
+            : 
+                <Link to={'/Login'} className="btn btn-ghost">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.7} stroke="currentColor" className="size-9">
+                        <path strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                    </svg>
+                </Link>
+            }
             
         </div>
     </div>
 
     {/* --------- End navbar ----------- */}
+
+
+    {/* --------- Contenido ------------ */}
 
     <div className='w-full'>
         <Outlet />
@@ -98,7 +161,7 @@ export default function Root () {
 
     {/* Añadir un footer */}
     
-    <footer className="footer items-center p-4 bg-neutral text-neutral-content">
+    <footer className="footer items-center p-4 bg-neutral h-16 text-neutral-content">
         <aside className="items-center grid-flow-col">
             <img src={maoiImg} className='-scale-x-90' width="25px" alt="Moai"/>
             <p>Copyright © 2024 - All right reserved</p>
@@ -110,6 +173,8 @@ export default function Root () {
             <a><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" className="fill-current"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"></path></svg></a>
         </nav>
     </footer>
+
+    </AuthContext.Provider>
 
     </>);
 }
