@@ -1,10 +1,16 @@
 from django.shortcuts import render
 from django.contrib.auth import get_user_model, login, logout
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 
 from rest_framework import viewsets, renderers, generics, permissions, authentication, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.views import APIView
+
+from datetime import datetime, timedelta
 
 from .serializers import ChileanUserRegisterSerializer, ChileanUserLoginSerializer, ChileanUserSerializer
 from .validations import *
@@ -52,12 +58,14 @@ class UserLogin (APIView):
 
 class UserLogout (APIView):
     
-    authentication_classes = [ ]
-    permission_classes = [permissions.AllowAny, ]
+    authentication_classes = [ authentication.TokenAuthentication, ]
+    permission_classes = [permissions.IsAuthenticated, ]
+    
     
     def post (self, request, format = None):
         logout(request)
-        return Response(status=status.HTTP_200_OK)
+        response = Response(status=status.HTTP_200_OK)
+        return response
             
             
             
@@ -77,6 +85,7 @@ class TestView (APIView):
     
     def post (self, request, format = None):     
         print("Post ha pasado la prueba con el usuario")
+        print(request.user)
         
         return Response ( status = status.HTTP_200_OK )
         

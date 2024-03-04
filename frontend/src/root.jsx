@@ -8,14 +8,15 @@ import axios from 'axios';
 
 axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
 axios.defaults.xsrfCookieName = "csrftoken";
-axios.defaults.withCredentials = true;
+axios.defaults.withXSRFToken = (config) => !!config.useCredentials;
 
 const client = axios.create({
-    baseURL: "http://127.0.0.1:8000/",
+    withCredentials: true
 });
 
 
 export const AuthContext = createContext(null);
+
 
 export default function Root () {
 
@@ -41,15 +42,18 @@ export default function Root () {
     }
 
     const handleLogout = (e) => {
-        e.preventDefault();
+        let csrfToken  = "{% csrf_token %}"
         client.post(
-            "api-user/logout/",
-            {withCredentials : true}
+            "api-user/logout/"
         ).then ((response) => {
             setIsLogged(false);
         }).then(() => {
             navigate("/");
         })
+
+        /* client.post(
+            "api-user/test/") */
+
     }
 
 
