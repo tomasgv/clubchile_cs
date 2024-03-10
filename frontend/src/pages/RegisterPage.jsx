@@ -9,7 +9,7 @@ axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN';
 axios.defaults.withCredentials = true;
 
 const client = axios.create({
-    baseURL: "http://127.0.0.1:8000/",
+    
 });
 
 
@@ -31,7 +31,6 @@ const RegisterPage = () => {
             setPassword2("");
             return;
         }
-
 
         try {
             if (isLogged){

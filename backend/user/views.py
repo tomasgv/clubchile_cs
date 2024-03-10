@@ -3,12 +3,13 @@ from django.contrib.auth import get_user_model, login, logout
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
 from rest_framework import viewsets, renderers, generics, permissions, authentication, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.views import APIView
+from rest_framework.authentication  import SessionAuthentication
 
 from datetime import datetime, timedelta
 
@@ -58,9 +59,10 @@ class UserLogin (APIView):
 
 class UserLogout (APIView):
     
-    authentication_classes = [ authentication.TokenAuthentication, ]
+    authentication_classes = [ SessionAuthentication, ]
     permission_classes = [permissions.IsAuthenticated, ]
-    
+    #permission_classes = [permissions.AllowAny]
+    #authentication_classes = []
     
     def post (self, request, format = None):
         logout(request)
@@ -71,11 +73,10 @@ class UserLogout (APIView):
             
 class UserView (APIView):
     authentication_classes = [authentication.SessionAuthentication, ]
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, ]
     
     def get (self, request, format = None):     
         serializer = ChileanUserSerializer(request.user)
-        
         return Response ( {'user' : serializer.data }, status = status.HTTP_200_OK )
     
     

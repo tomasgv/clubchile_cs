@@ -4,15 +4,16 @@ import instaImg from './svg/instagram-svgrepo-com.svg';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import React, {useEffect, useState, useContext, createContext} from 'react';
 import axios from 'axios';
+/* import Cookies from 'js-cookie'; */
 
 
 axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
 axios.defaults.xsrfCookieName = "csrftoken";
-axios.defaults.withXSRFToken = (config) => !!config.useCredentials;
+axios.defaults.useCredentials = true;
 
-const client = axios.create({
+/* const client = axios.create({
     withCredentials: true
-});
+}); */
 
 
 export const AuthContext = createContext(null);
@@ -20,7 +21,7 @@ export const AuthContext = createContext(null);
 
 export default function Root () {
 
-
+    const [user, setUser] = useState(null);
     const [isLogged, setIsLogged] = useState(false);
     const loginInReact = () => setIsLogged(true);
     const logoutInReact = () => setIsLogged(false);
@@ -41,45 +42,62 @@ export default function Root () {
         setPrevScrollPos(currentScrollPos);    
     }
 
-    const handleLogout = (e) => {
-        let csrfToken  = "{% csrf_token %}"
-        client.post(
-            "api-user/logout/"
-        ).then ((response) => {
-            setIsLogged(false);
-        }).then(() => {
-            navigate("/");
-        })
 
-        /* client.post(
-            "api-user/test/") */
 
+
+    const handleLogout = async (e) => {
+        e.preventDefault();
+        axios
+            .post(
+                "api-user/logout/", {}
+            ).then( (response) => {
+                console.log("Logout successful");
+                window.location.reload();
+            }).catch( (error) => {
+                console.log(error);
+            })
     }
-
-
-    /* console.log(isLogged); */
 
 
     
     /* For controlling the navbar disappearance */
-    useEffect( () => {
+    useEffect(() => {
+        const handleScroll = () => {
+            const currentScrollPos = window.scrollY;
+            if (currentScrollPos > prevScrollPos) {     
+                setVisibleNavBar(false);
+            } else {
+                setVisibleNavBar(true);
+            }
+            setPrevScrollPos(currentScrollPos);    
+        }
+
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
-    }, [prevScrollPos] )
+    }, [prevScrollPos]);
 
-    useEffect ( () => {
-        axios.get("api-user/user")
+
+    useEffect(() => {
+
+        /* 
+        Cual será otra tecnica para verificar si el usuario esta logeado?
+        */
+
+        axios
+            .get("api-user/user/")
             .then( (response) => {
                 setIsLogged(true);
-            }).catch ( (error) => {
+                setUser(response.data.user);
+            })
+            .catch( (error) => {
                 setIsLogged(false);
             })
-    }, []);
+    }, [setIsLogged]);
 
 
     return (
     <>
-    <AuthContext.Provider value={{isLogged, loginInReact, logoutInReact}}>
+    <AuthContext.Provider value={{user, setUser, isLogged, loginInReact, logoutInReact}}>
 
     {/* --------- Init navbar ----------- */}
     <div className={`navbar bg-base-100 z-50 fixed top-0 transition-transform ease-in-out duration-500 ${visibleNavBar ? '' : '-translate-y-20'} `}>
@@ -111,7 +129,7 @@ export default function Root () {
         </div>
         <div className="navbar-center hidden lg:flex">
             <ul className="menu menu-horizontal px-1">
-            <li><a>Actividades</a></li>
+            <li><a >Actividades</a></li>
             <li>
                 <details>
                 <summary>Parent</summary>
